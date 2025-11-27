@@ -103,7 +103,11 @@ def load_user(user_id):
 # Conversion functions
 def mrso_to_wgs84(x, y):
     """Convert MRSO to WGS84 coordinates"""
+<<<<<<< HEAD
         # Simple approximation (you can add pyproj later if needed)
+=======
+        # Simple approximation that works well for Malaysia
+>>>>>>> c82525a6603f1497e9f11ae7a9483d68c58660ec
         lat = 5.0 + (y - 500000) / 110000
         lon = 101.0 + (x - 300000) / 111000
         return round(lat, 6), round(lon, 6)
