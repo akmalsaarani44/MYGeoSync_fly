@@ -25,13 +25,8 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 # Try to import pyproj for better coordinate conversion
-try:
-    from pyproj import Transformer
-    PYPROJ_AVAILABLE = True
-    print("✅ pyproj is available - using exact coordinate transformation")
-except ImportError:
-    PYPROJ_AVAILABLE = False
-    print("❌ pyproj not available - using approximate conversion")
+PYPROJ_AVAILABLE = False
+print("🔧 Using fast approximate conversion optimized for Malaysia")
 
 # Database Models
 class User(UserMixin, db.Model):
@@ -108,11 +103,6 @@ def load_user(user_id):
 # Conversion functions
 def mrso_to_wgs84(x, y):
     """Convert MRSO to WGS84 coordinates"""
-    if PYPROJ_AVAILABLE:
-        transformer = Transformer.from_crs("ESRI:102062", "EPSG:4326", always_xy=True)
-        lon, lat = transformer.transform(x, y)
-        return round(lat, 6), round(lon, 6)
-    else:
         # Simple approximation (you can add pyproj later if needed)
         lat = 5.0 + (y - 500000) / 110000
         lon = 101.0 + (x - 300000) / 111000
