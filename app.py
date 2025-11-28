@@ -229,9 +229,52 @@ def login():
     </html>
     ''')
 
-# [Include all other routes: register, dashboard, converter, convert, account, logout]
-# They are identical to the Koyeb version
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+        
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        company_name = request.form.get('company_name')
+        full_name = request.form.get('full_name')
+        
+        # Basic validation
+        if password != confirm_password:
+            flash('Passwords do not match!', 'danger')
+            return redirect(url_for('register'))
+            
+        if User.query.filter_by(email=email).first():
+            flash('Email already registered!', 'danger')
+            return redirect(url_for('register'))
+            
+        # Create new user
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        user = User(
+            email=email,
+            password_hash=hashed_password,
+            company_name=company_name,
+            full_name=full_name,
+            subscription_type='trial',
+            subscription_expiry=datetime.utcnow() + timedelta(days=30)
+        )
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        flash('Registration successful! Please login.', 'success')
+        return redirect(url_for('login'))
+        
+    return render_template('register.html')
 
+# Add health check route
+@app.route('/health')
+def health_check():
+    return 'OK', 200
+
+# Make sure main block looks like this:
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
