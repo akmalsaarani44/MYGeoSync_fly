@@ -1,20 +1,42 @@
 app = "mygeosync-app-bitter-sunset-5629"
-primary_region = "lax"
 
 [build]
-
-[env]
-  PORT = "8080"
+  builder = "paketobuildpacks/builder:base"
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = false
+  auto_stop_machines = true
   auto_start_machines = true
+  min_machines_running = 0
   
-  [[http_service.checks]]
-    interval = "10s"        # Changed from 10000 to "10s"
-    grace_period = "10s"
+  [[http_service.ports]]
+    port = 80
+    handlers = ["http"]
+  [[http_service.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+
+  [http_service.http_options]
+    h2_backend = true
+
+  [[http_service.http_checks]]
+    interval = 10000
+    grace_period = "30s"
     method = "get"
     path = "/health"
-    timeout = "5s"          # Added explicit time unit
+    protocol = "http"
+    timeout = 5000
+    tls_skip_verify = false
+
+    [http_service.http_checks.headers]
+      Content-Type = "application/json"
+
+[vm]
+  size = "shared-cpu-1x"
+  memory = "512mb"
